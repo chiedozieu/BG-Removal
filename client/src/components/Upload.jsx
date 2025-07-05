@@ -1,7 +1,11 @@
 import React from "react";
 import { assets } from "../assets/assets";
+import { AppContext } from "../context/AppContext";
+import { useContext } from "react";
 
 const Upload = () => {
+  const { removeImageBG } = useContext(AppContext);
+  
   return (
     <div className="pb-16">
       {/* title */}
@@ -9,12 +13,21 @@ const Upload = () => {
         Experience the power. Try now!
       </h1>
       <div className="text-center mb-24">
-                <input type="file" id="upload2" className="hidden" />
-                <label htmlFor="upload2" className="inline-flex items-center gap-3 px-8 py-3 bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-500 rounded-full text-white cursor-pointer hover:scale-105 transition-all duration-700">
-                  <img src={assets.upload_btn_icon} alt="" width={20} />
-                  <p className="text-sm">Upload Image</p>
-                </label>
-              </div> 
+        <input
+          onChange={(e) => removeImageBG(e.target.files[0])}
+          type="file"
+          id="upload2"
+          accept="image/*"
+          className="hidden"
+        />
+        <label
+          htmlFor="upload2"
+          className="inline-flex items-center gap-3 px-8 py-3 bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-500 rounded-full text-white cursor-pointer hover:scale-105 transition-all duration-700"
+        >
+          <img src={assets.upload_btn_icon} alt="" width={20} />
+          <p className="text-sm">Upload Image</p>
+        </label>
+      </div>
     </div>
   );
 };

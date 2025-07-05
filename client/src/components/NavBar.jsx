@@ -28,7 +28,7 @@ const NavBar = () => {
             <img className="w-5" src={assets.credit_icon} alt="" />
             <p className="sm:text-sm text-xs font-medium text-gray-600">Credits: {credit}</p>
           </button>
-          <p className="sm:text-sm text-xs font-medium text-gray-600">Hi {user.firstName}</p>
+          <p className="sm:text-sm text-xs font-medium text-gray-600">Hello {user.firstName || user.fullName ? user.firstName || user.fullName : user.emailAddresses[0].emailAddress}!</p>
           <UserButton />
         </div>
       ) : (
