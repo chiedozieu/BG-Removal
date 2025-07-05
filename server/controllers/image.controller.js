@@ -15,10 +15,10 @@ const removeBackgroundImage = async (req, res) => {
         .status(404)
         .json({ success: false, message: "User not found" });
     }
-    if (user.creditBalance <= 0) {
-      return res.status(403).json({
+    if (user.creditBalance === 0) {
+      return res.json({
         success: false,
-        message: "Insufficient credits",
+        message: "Insufficient credit balance",
         creditBalance: user.creditBalance,
       });
     }

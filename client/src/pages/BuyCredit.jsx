@@ -12,14 +12,20 @@ const BuyCredit = () => {
       </h1>
       <div className="flex flex-wrap justify-center gap-6 text-left">
         {plans.map((plan, index) => (
-          <div key={index} className=" bg-white drop-shadow-sm border rounded-lg py-12 px-8 text-gray-800 border-gray-200 hover:scale-105 transition-all duration-500">
+          <div
+            key={index}
+            className=" bg-white drop-shadow-sm border rounded-lg py-12 px-8 text-gray-800 border-gray-200 hover:scale-105 transition-all duration-500"
+          >
             <img src={assets.logo_icon} width={40} alt="" />
             <p className="mt-3 font-semibold">{plan.desc}</p>
-            <p className="text-sm" >{plan.description}</p>
+            <p className="text-sm">{plan.description}</p>
             <p className="mt-6">
-              <span className="text-3xl font-medium">${plan.price}</span>/{plan.credits}
+              <span className="text-3xl font-medium">${plan.price}</span>/
+              {plan.credits}
             </p>
-            <button className="w-full mt-8 py-2 bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-500 text-white rounded-md min-w-52 text-sm">Buy Now</button>
+            <button className="w-full mt-8 py-2 bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-500 text-white rounded-md min-w-52 text-sm cursor-pointer">
+              Buy Now
+            </button>
           </div>
         ))}
       </div>

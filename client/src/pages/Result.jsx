@@ -36,9 +36,9 @@ const Result = () => {
 
         {resultImage && (
           <div className="flex  justify-center sm:justify-end items-center flex-wrap gap-4 mt-6">
-            <button className="px-8 py-2.5 text-teal-600 border border-teal-600 rounded-full hover:bg-teal-600 hover:text-white hover:scale-105 transition-all duration-700 cursor-pointer">
+            <Link to="/" className="px-8 py-2.5 text-teal-600 border border-teal-600 rounded-full hover:bg-teal-600 hover:text-white hover:scale-105 transition-all duration-700 cursor-pointer">
               Try another image
-            </button>
+            </Link>
             <a
               href={resultImage}
               download
