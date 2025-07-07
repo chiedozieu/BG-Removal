@@ -2,6 +2,8 @@
 //endpoint http;//localhost:4000/api/user/webhooks
 import { Webhook } from "svix";
 import User from "../models/user.model.js";
+import razorpay from "razorpay";
+import Transaction from "../models/transaction.model.js";
 
 const clerkWebhooks = async (req, res) => {
   try {
@@ -50,7 +52,8 @@ const clerkWebhooks = async (req, res) => {
       }
 
       default:
-        break;
+        return res.status(400).json({ success: false, message: "Invalid plan selected" });
+        
     }
   } catch (error) {
     console.log("Error in webhooks", error.message);
@@ -80,5 +83,83 @@ const userCredits = async (req, res) => {
   }
 };
 
-export { clerkWebhooks, userCredits };
+// gateway for payment instance
+const razorpayInstance = new razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+// Api to make payment
+const paymentRazorpay = async (req, res) => {
+  try {
+    const  clerkId  = req.clerkId;
+    const { planId } = req.body;
 
+    const userData = await User.findOne({ clerkId });
+
+    if (!userData || !planId) {
+      console.log("User with clerkId not found:");
+      return res.json({ success: false, message: "User not found" });
+    }
+
+    let credits, plan, amount, date;
+
+    switch (planId) {
+      case "Basic":
+        plan = "Basic";
+        credits = 100;
+        amount = 10;
+
+        break;
+
+      case "Advanced":
+        plan = "Advanced";
+        credits = 500;
+        amount = 50;
+        break;
+
+      case "Business":
+        plan = "Business";
+        credits = 5000;
+        amount = 250;
+        break;
+
+      default:
+        break;
+    }
+    date = Date.now();
+
+    // creating transaction
+    const transactionData = {
+      clerkId,
+      plan,
+      amount,
+      credits,
+      date,
+    };
+
+    const newTransaction = await Transaction.create(transactionData);
+
+    const options = {
+      amount: amount * 100,
+      currency: process.env.RAZORPAY_CURRENCY,
+      receipt: newTransaction._id,
+    };
+
+
+    await razorpayInstance.orders.create(options, (error, order) => {
+      if (error) {
+        return res.json({ success: false, message: error });
+      }
+
+      res.json({
+        success: true,
+        order,
+      });
+    });
+  } catch (error) {
+    console.log("Error in paymentRazorpay", error.message, error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+export { clerkWebhooks, userCredits, paymentRazorpay };

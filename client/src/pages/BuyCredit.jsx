@@ -1,7 +1,50 @@
 import React from "react";
 import { assets, plans } from "../assets/assets";
+import { AppContext } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
+import axios from "axios";
 
 const BuyCredit = () => {
+  const { backendUrl, loadCreditsData } = React.useContext(AppContext);
+  const navigate = useNavigate();
+  const { getToken } = useAuth();
+
+  const initPay = async (order) => {
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: order.amount,
+      currency: order.currency,
+      name: "Credits Payment",
+      description: "Credits Payment",
+      order_id: order.id,
+      receipt: order.receipt,
+      handler: async (response) => {
+        console.log(response);
+        
+      },
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  
+  };
+
+  const payWithRazorpay = async (planId) => {
+    try {
+      const token = await getToken();
+      const { data } = await axios.post(
+        `${backendUrl}/api/user/pay-razor`,
+        { planId },
+        { headers: { token } }
+      );
+      if (data.success) {
+        initPay(data.order);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
   return (
     <div className="min-h-[75vh] text-center pt-14 mb-10">
       <button className="border border-gray-400 px-10 py-2 rounded-full mb-6 hover:border-violet-500 ">
@@ -18,12 +61,15 @@ const BuyCredit = () => {
           >
             <img src={assets.logo_icon} width={40} alt="" />
             <p className="mt-3 font-semibold">{plan.desc}</p>
-            <p className="text-sm">{plan.description}</p>
+            <p className="text-sm">{plan.id}</p>
             <p className="mt-6">
               <span className="text-3xl font-medium">${plan.price}</span>/
               {plan.credits}
             </p>
-            <button className="w-full mt-8 py-2 bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-500 text-white rounded-md min-w-52 text-sm cursor-pointer">
+            <button
+              onClick={() => payWithRazorpay(plan.id)}
+              className="w-full mt-8 py-2 bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-500 text-white rounded-md min-w-52 text-sm cursor-pointer"
+            >
               Buy Now
             </button>
           </div>
