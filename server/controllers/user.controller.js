@@ -52,8 +52,9 @@ const clerkWebhooks = async (req, res) => {
       }
 
       default:
-        return res.status(400).json({ success: false, message: "Invalid plan selected" });
-        
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid plan selected" });
     }
   } catch (error) {
     console.log("Error in webhooks", error.message);
@@ -91,7 +92,7 @@ const razorpayInstance = new razorpay({
 // Api to make payment
 const paymentRazorpay = async (req, res) => {
   try {
-    const  clerkId  = req.clerkId;
+    const clerkId = req.clerkId;
     const { planId } = req.body;
 
     const userData = await User.findOne({ clerkId });
@@ -145,7 +146,6 @@ const paymentRazorpay = async (req, res) => {
       receipt: newTransaction._id,
     };
 
-
     await razorpayInstance.orders.create(options, (error, order) => {
       if (error) {
         return res.json({ success: false, message: error });
@@ -162,4 +162,38 @@ const paymentRazorpay = async (req, res) => {
   }
 };
 
-export { clerkWebhooks, userCredits, paymentRazorpay };
+// verify razorpay payment
+
+const verifyRazorpay = async (req, res) => {
+  try {
+    const { razorpay_order_id } = req.body;
+    const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
+
+    if (orderInfo.status === "paid") {
+      const transactionData = await Transaction.findById(orderInfo.receipt);
+      if (transactionData.payment) {
+        return res.json({
+          success: false,
+          message: "Payment already verified",
+        });
+      }
+      // update user credit balance
+      const userData = await User.findOne({ clerkId: transactionData.clerkId });
+      const creditBalance = userData.creditBalance + transactionData.credits;
+      await User.findByIdAndUpdate(userData._id, {
+        creditBalance,
+      });
+
+      // update transaction
+      await Transaction.findByIdAndUpdate(transactionData._id, {
+        payment: true,
+      });
+
+      res.json({ success: true, message: "Credits added successfully" });
+    }
+  } catch (error) {
+    console.log("Error in paymentRazorpay", error.message, error);
+    res.json({ success: false, message: error.message });
+  }
+};
+export { clerkWebhooks, userCredits, paymentRazorpay, verifyRazorpay };
